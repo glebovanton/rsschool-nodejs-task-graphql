@@ -2,21 +2,25 @@ import {
     GraphQLInt,
     GraphQLObjectType,
     GraphQLNonNull,
-    GraphQLString,
     GraphQLBoolean,
     GraphQLInputObjectType,
 } from 'graphql';
 import { UUIDType } from './uuid.js';
 import { MemberType, MemberTypeId } from './member.js';
+import { GraphQLContext } from "../mutations.js";
 
 export const Profile = new GraphQLObjectType({
     name: 'Profile',
     fields: {
         id: { type: new GraphQLNonNull(UUIDType) },
-        name: { type: new GraphQLNonNull(GraphQLString) },
         yearOfBirth: { type: new GraphQLNonNull(GraphQLInt) },
         isMale: { type: new GraphQLNonNull(GraphQLBoolean) },
-        memberType: { type: new GraphQLNonNull(MemberType) },
+        memberType: {
+            type: new GraphQLNonNull(MemberType),
+            resolve: async ({ memberTypeId }: { memberTypeId: string }, _args, { prisma }: GraphQLContext) => {
+                return prisma.memberType.findUnique({where: {id: memberTypeId}});
+            }
+        },
     },
 });
 
@@ -38,7 +42,6 @@ export const CreateProfileInput = new GraphQLInputObjectType({
         userId: { type: new GraphQLNonNull(UUIDType) },
         isMale: { type: new GraphQLNonNull(GraphQLBoolean) },
         memberTypeId: { type: new GraphQLNonNull(MemberTypeId) },
-        name: { type: new GraphQLNonNull(GraphQLString) },
         yearOfBirth: { type: new GraphQLNonNull(GraphQLInt) },
     },
 });
