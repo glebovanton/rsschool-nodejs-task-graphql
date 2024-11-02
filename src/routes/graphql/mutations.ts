@@ -146,7 +146,7 @@ const Mutations = new GraphQLObjectType({
         },
 
         subscribeTo: {
-            type: new GraphQLNonNull(User),
+            type: GraphQLBoolean,
             args: {
                 userId: { type: new GraphQLNonNull(UUIDType) },
                 authorId: { type: new GraphQLNonNull(UUIDType) },
@@ -156,18 +156,18 @@ const Mutations = new GraphQLObjectType({
                 { userId, authorId }: { userId: string; authorId: string },
                 { prisma }: GraphQLContext
             ) => {
-                return prisma.user.update({
-                    where: {
-                        id: userId,
-                    },
-                    data: {
-                        userSubscribedTo: {
-                            create: {
-                                authorId: authorId,
-                            },
+                try {
+                    await prisma.subscribersOnAuthors.create({
+                        data: {
+                            subscriberId: userId,
+                            authorId: authorId,
                         },
-                    },
-                });
+                    });
+
+                    return true;
+                } catch {
+                    return false;
+                }
             },
         },
 
