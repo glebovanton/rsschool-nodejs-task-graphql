@@ -45,3 +45,12 @@ Useful things:
 - Reset database: npx prisma migrate reset (this command triggers db seeding)  
 - To test an existing rest api (swagger): [::1]:8000/docs  
 - For ease of test of graphql you can use [api platform](https://learning.postman.com/docs/sending-requests/graphql/graphql-overview/) that can fetch [introspection](https://graphql.org/learn/introspection/)  
+
+## To kill port
+
+```bash     
+lsof -i:8000
+``` 
+```bash 
+kill -9 $PORT
+```
