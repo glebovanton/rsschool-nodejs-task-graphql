@@ -1,6 +1,7 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import depthLimit from 'graphql-depth-limit';
+import { graphql, GraphQLSchema, GraphQLObjectType, parse, validate } from 'graphql';
 import { createGqlResponseSchema, gqlResponseSchema } from './schemas.js';
-import { graphql, GraphQLSchema, GraphQLObjectType } from 'graphql';
 import Query from './query.js';
 import Mutations from './mutations.js';
 
@@ -25,13 +26,26 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async handler(req) {
       const { prisma } = fastify;
       const { query, variables } = req.body;
+      const depthLimitation = 5;
 
-      return graphql({
-        schema,
-        source: query,
-        variableValues: variables,
-        contextValue: { prisma },
-      });
+      try {
+        const validationErrors = validate(schema, parse(query), [depthLimit(depthLimitation)]);;
+        if (validationErrors?.length > 0) {
+          console.log(`Maximum depth exceeded: ${depthLimitation}`);
+
+          return {  data: null, errors: validationErrors };
+        }
+
+        return graphql({
+          schema,
+          source: query,
+          variableValues: variables,
+          contextValue: { prisma },
+        });
+      } catch (error) {
+        console.error('GraphQL Error:', error);
+        throw new Error('An error occurred while processing the GraphQL request');
+      }
     },
   });
 };
