@@ -1,5 +1,5 @@
 import { GraphQLObjectType, GraphQLNonNull, GraphQLBoolean, GraphQLString } from 'graphql';
-import { PrismaClient } from '@prisma/client';
+import { GraphQLContext } from './index.js';
 
 import {
     User,
@@ -23,10 +23,6 @@ import {
     Post,
 } from './types/post.js';
 import { UUIDType } from './types/uuid.js';
-
-export interface GraphQLContext {
-    prisma: PrismaClient;
-}
 
 const Mutations = new GraphQLObjectType({
     name: 'Mutations',

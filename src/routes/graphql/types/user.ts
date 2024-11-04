@@ -9,7 +9,7 @@ import {
 import { UUIDType } from './uuid.js';
 import { Profile } from './profile.js';
 import { Post } from './post.js';
-import { GraphQLContext } from '../mutations.js';
+import { GraphQLContext } from '../index.js';
 
 export const User = new GraphQLObjectType({
     name: 'User',
@@ -19,32 +19,26 @@ export const User = new GraphQLObjectType({
         name: { type: new GraphQLNonNull(GraphQLString) },
         profile: {
             type: Profile,
-            resolve: async ({ id} : { id: string }, _args, { prisma }: GraphQLContext) => {
-                return prisma.profile.findUnique({
-                    where: { userId: id },
-                });
+            resolve: async ({ id} : { id: string }, _args, { loaders }: GraphQLContext) => {
+                return loaders.profileByIdLoader.load(id);
             },
         },
         posts: {
             type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(Post))),
-            resolve: async ({ id }: { id: string }, _args, { prisma }: GraphQLContext) => {
-                return prisma.post.findMany( { where: { authorId: id } } );
+            resolve: async ({ id }: { id: string }, _args, { loaders }: GraphQLContext) => {
+                return loaders.postByIdLoader.load(id);
             },
         },
         userSubscribedTo: {
             type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(User))),
-            resolve: async ({ id }: { id: string }, _args, { prisma }: GraphQLContext) => {
-                return prisma.user.findMany({
-                    where: { subscribedToUser: { some: { subscriberId: id } } },
-                });
+            resolve: async ({ id }: { id: string }, _args, { loaders }: GraphQLContext) => {
+                return loaders.userSubscribedToLoader.load(id);
             },
         },
         subscribedToUser: {
             type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(User))),
-            resolve: async ({ id }: { id: string }, _args, { prisma }: GraphQLContext) => {
-                return prisma.user.findMany({
-                    where: { userSubscribedTo: { some: { authorId: id } } },
-                });
+            resolve: async ({ id }: { id: string }, _args, { loaders }: GraphQLContext) => {
+                return loaders.subscribedToUserLoader.load(id);
             },
         },
     }),

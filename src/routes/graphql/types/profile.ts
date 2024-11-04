@@ -7,7 +7,7 @@ import {
 } from 'graphql';
 import { UUIDType } from './uuid.js';
 import { MemberType, MemberTypeId } from './member.js';
-import { GraphQLContext } from "../mutations.js";
+import { GraphQLContext } from "../index.js";
 
 export const Profile = new GraphQLObjectType({
     name: 'Profile',
@@ -17,8 +17,8 @@ export const Profile = new GraphQLObjectType({
         isMale: { type: new GraphQLNonNull(GraphQLBoolean) },
         memberType: {
             type: new GraphQLNonNull(MemberType),
-            resolve: async ({ memberTypeId }: { memberTypeId: string }, _args, { prisma }: GraphQLContext) => {
-                return prisma.memberType.findUnique({ where: { id: memberTypeId } });
+            resolve: async ({ memberTypeId }: { memberTypeId: string }, _args, { loaders }: GraphQLContext) => {
+                return loaders.memberTypeLoader.load(memberTypeId);
             }
         },
     },
